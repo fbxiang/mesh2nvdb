@@ -14,7 +14,6 @@ class build_ext(build_ext_orig):
     def run(self):
         for ext in self.extensions:
             self.build_cmake(ext)
-        super().run()
 
     def build_cmake(self, ext):
         cwd = pathlib.Path().absolute()
@@ -23,17 +22,20 @@ class build_ext(build_ext_orig):
         # any python sources to bundle, the dirs will be missing
         build_temp = pathlib.Path(self.build_temp)
         build_temp.mkdir(parents=True, exist_ok=True)
-        extdir = pathlib.Path(self.get_ext_fullpath(ext.name))
+        extdir = (
+            pathlib.Path(self.get_ext_fullpath(ext.name)).parent
+            / self.distribution.get_name()
+        )
         extdir.mkdir(parents=True, exist_ok=True)
 
         # example of cmake args
         config = "Debug" if self.debug else "Release"
         cmake_args = [
-            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=$<1:{extdir.parent.absolute()}>",
+            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=$<1:{extdir.absolute()}>",
             "-DCMAKE_BUILD_TYPE=" + config,
         ]
 
-        build_args = ["--target", "mesh2nvdb", "--config", config]
+        build_args = ["--target", "_C", "--config", config]
 
         os.chdir(str(build_temp))
         self.spawn(["cmake", str(cwd)] + cmake_args)
@@ -46,6 +48,7 @@ setup(
     name="mesh2nvdb",
     version="0.1",
     packages=["mesh2nvdb"],
+    package_dir={"mesh2nvdb": "mesh2nvdb"},
     ext_modules=[CMakeExtension("mesh2nvdb")],
     cmdclass={
         "build_ext": build_ext,

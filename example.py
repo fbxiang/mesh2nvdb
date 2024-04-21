@@ -18,3 +18,5 @@ triangles = np.array(
     ]
 )
 nvdb = mesh2nvdb(vertices, triangles)
+
+print('size', len(nvdb))

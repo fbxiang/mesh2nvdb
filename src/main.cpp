@@ -90,10 +90,10 @@ static struct PyMethodDef mesh2nvdb_methods[] = {
     {NULL, NULL, 0, NULL}};
 
 static struct PyModuleDef mesh2nvdb_module = {.m_base = PyModuleDef_HEAD_INIT,
-                                              .m_name = "mesh2nvdb",
+                                              .m_name = "_C",
                                               .m_methods = mesh2nvdb_methods};
 
-PyMODINIT_FUNC PyInit_mesh2nvdb(void) {
+PyMODINIT_FUNC PyInit__C(void) {
   PyObject *m = PyModule_Create(&mesh2nvdb_module);
   return m;
 }
