@@ -3,11 +3,23 @@ import pathlib
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext as build_ext_orig
+from wheel.bdist_wheel import bdist_wheel
 
 
 class CMakeExtension(Extension):
     def __init__(self, name):
         super().__init__(name, sources=[])
+
+
+class bdist_wheel_abi3(bdist_wheel):
+    def get_tag(self):
+        python, abi, plat = super().get_tag()
+
+        if python.startswith("cp"):
+            # on CPython, our wheels are abi3 and compatible back to 3.6
+            return python, "abi3", plat
+
+        return python, abi, plat
 
 
 class build_ext(build_ext_orig):
@@ -50,7 +62,5 @@ setup(
     packages=["mesh2nvdb"],
     package_dir={"mesh2nvdb": "mesh2nvdb"},
     ext_modules=[CMakeExtension("mesh2nvdb")],
-    cmdclass={
-        "build_ext": build_ext,
-    },
+    cmdclass={"build_ext": build_ext, "bdist_wheel": bdist_wheel_abi3},
 )
