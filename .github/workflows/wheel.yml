@@ -14,8 +14,8 @@ jobs:
         uses: pypa/cibuildwheel@v2.17.0
         env:
           CIBW_ARCHS: "auto64"
-          CIBW_BUILD: cp37-*
-          CIBW_MUSLLINUX_X86_64_IMAGE: quay.io/pypa/musllinux_1_2_x86_64
+          CIBW_BUILD: cp36-*
+          CIBW_SKIP: cp36-musllinux*
       - name: ls wheels
         run: |
           ls wheelhouse
