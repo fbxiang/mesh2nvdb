@@ -28,7 +28,7 @@ FetchContent_Declare(
 FetchContent_Declare(
     tbb
     GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
-    GIT_TAG        v2021.12.0
+    GIT_TAG        bd0f1f951451646ad3304facad0bc4d7f6155c89
 )
 
 set(CMAKE_CXX_FLAGS_OLD ${CMAKE_CXX_FLAGS})

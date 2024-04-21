@@ -3,6 +3,8 @@
 *.log
 tmp/
 
+*.so
+__pycache__
 .ccls-cache
 /build
 compile_commands.json
