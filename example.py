@@ -20,3 +20,5 @@ triangles = np.array(
 nvdb = mesh2nvdb(vertices, triangles)
 
 print('size', len(nvdb))
+with open("out.nvdb", "wb") as f:
+    f.write(nvdb)
