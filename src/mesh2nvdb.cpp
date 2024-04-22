@@ -12,12 +12,30 @@
 using namespace openvdb;
 
 std::string mesh2nvdb(float *points, uint32_t n_points, int *triangles,
-                      uint32_t n_triangles) {
-  math::Transform::Ptr xform = math::Transform::createLinearTransform();
-  FloatGrid::Ptr sgrid = tools::meshToSignedDistanceField<FloatGrid>(
-      *xform, std::vector((Vec3s *)points, ((Vec3s *)points) + n_points),
-      std::vector((Vec3I *)triangles, ((Vec3I *)triangles) + n_triangles), {},
-      3.0, 3.0);
+                      uint32_t n_triangles, float gridSize) {
+
+  std::vector ps((Vec3s *)points, ((Vec3s *)points) + n_points);
+  std::vector ts((Vec3I *)triangles, ((Vec3I *)triangles) + n_triangles);
+
+  Vec3s lower = Vec3s(std::numeric_limits<float>::max(),
+                      std::numeric_limits<float>::max(),
+                      std::numeric_limits<float>::max());
+  for (auto &p : ps) {
+    lower.x() = std::min(lower.x(), p.x());
+    lower.y() = std::min(lower.y(), p.y());
+    lower.z() = std::min(lower.z(), p.z());
+  }
+
+  math::Transform::Ptr xform = math::Transform::createLinearTransform(
+    Mat4R(
+      (double)gridSize, 0., 0., 0.,
+      0., (double)gridSize, 0., 0.,
+      0., 0., (double)gridSize, 0.,
+      lower.x() - 3. * gridSize,  lower.y() - 3. * gridSize, lower.z() - 3. * gridSize, 1.0)
+    );
+
+  FloatGrid::Ptr sgrid =
+      tools::meshToSignedDistanceField<FloatGrid>(*xform, ps, ts, {}, 3.0, 3.0);
   auto handle = nanovdb::createNanoGrid(*sgrid);
   auto *dstGrid = handle.grid<float>();
   if (!dstGrid)

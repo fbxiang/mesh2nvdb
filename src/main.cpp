@@ -2,7 +2,7 @@
 #include <string>
 
 std::string mesh2nvdb(float *points, uint32_t n_points, int *triangles,
-                      uint32_t n_triangles);
+                      uint32_t n_triangles, float gridSize);
 
 struct PyArray_Descr {
   PyObject_HEAD PyTypeObject *typeobj;
@@ -41,11 +41,17 @@ static PyObject *mesh2nvdb_mesh2nvdb(PyObject *self, PyObject *args) {
   PyObject *float32 = PyObject_GetAttrString(numpy, "float32");
 
   PyObject *vertices, *triangles;
-  PyArg_ParseTuple(args, "OO", &vertices, &triangles);
+  float gridSize{0.f};
+  PyArg_ParseTuple(args, "OOf", &vertices, &triangles, &gridSize);
   if (!vertices || !triangles || (PyObject *)Py_TYPE(vertices) != ndarray ||
       (PyObject *)Py_TYPE(triangles) != ndarray) {
     PyErr_SetString(PyExc_ValueError,
                     "invalid arguments: vertices and triangles are np.ndarray");
+    return nullptr;
+  }
+  if (!(gridSize > 0.f)) {
+    PyErr_SetString(PyExc_ValueError,
+                    "invalid arguments: grid size must be positive");
     return nullptr;
   }
 
@@ -72,8 +78,9 @@ static PyObject *mesh2nvdb_mesh2nvdb(PyObject *self, PyObject *args) {
       PyObject_CallMethod(numpy, "ascontiguousarray", "O", triangles), "astype",
       "O", int32));
 
-  auto data = mesh2nvdb(reinterpret_cast<float *>(vs->data), vs->dimensions[0],
-                        reinterpret_cast<int *>(ts->data), ts->dimensions[0]);
+  auto data =
+      mesh2nvdb(reinterpret_cast<float *>(vs->data), vs->dimensions[0],
+                reinterpret_cast<int *>(ts->data), ts->dimensions[0], gridSize);
 
   PyObject *bytes = PyBytes_FromStringAndSize(data.c_str(), data.length());
 
